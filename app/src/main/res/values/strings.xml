@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Selfie Sprite Games</string>
+    <string name="tagline">Take a selfie. Play as yourself.</string>
+    <string name="btn_take_selfie">Take Selfie</string>
+    <string name="btn_retake">Retake</string>
+    <string name="btn_use_photo">Use This Photo</string>
+    <string name="btn_play_pong">Play Head Pong</string>
+    <string name="camera_permission_rationale">Camera access is needed to take your selfie sprite.</string>
+    <string name="camera_permission_denied">Camera permission denied. Enable it in Settings to play.</string>
+    <string name="pong_instructions">Drag on the left side to move your paddle. First to 5 wins!</string>
+    <string name="score_format">%1$d — %2$d</string>
+    <string name="winner_you">You win! 🎉</string>
+    <string name="winner_cpu">CPU wins. Try again!</string>
+    <string name="btn_play_again">Play Again</string>
+    <string name="btn_new_selfie">New Selfie</string>
+</resources>

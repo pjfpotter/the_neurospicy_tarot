@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="purple_primary">#7C4DFF</color>
+    <color name="purple_dark">#4A2FBD</color>
+    <color name="accent_amber">#FFC857</color>
+    <color name="bg_dark">#12101C</color>
+    <color name="surface_dark">#1E1B2E</color>
+    <color name="white">#FFFFFF</color>
+    <color name="paddle_color">#FFC857</color>
+    <color name="court_line">#3A3550</color>
+</resources>
