@@ -27,6 +27,7 @@ let legalTargets = []; // moves for selected piece
 let flipped = false;
 let pendingPromotion = null; // {from, move}
 let hovered = null; // {r,c}
+let dragState = null; // {r, c, draggable, dragging, startX, startY, ghostEl, hoverCell}
 
 const squares = [];
 for (let r = 0; r < 8; r++) {
@@ -46,8 +47,8 @@ for (let r = 0; r < 8; r++) {
     countEl.className = 'count-label';
 
     sq.append(whiteLayer, blackLayer, pieceEl, countEl);
-    sq.addEventListener('click', () => onSquareClick(r, c));
     sq.addEventListener('mouseenter', () => { hovered = { r, c }; showInspector(r, c); });
+    sq.addEventListener('pointerdown', (e) => onPointerDown(e, r, c));
 
     boardEl.appendChild(sq);
     squares.push({ el: sq, whiteLayer, blackLayer, pieceEl, countEl, r, c });
@@ -184,7 +185,107 @@ function describePiece(piece) {
   return `${color} ${names[piece[1]]}`;
 }
 
-function onSquareClick(r, c) {
+const DRAG_THRESHOLD = 4;
+
+// All board interaction — tap-to-select/move and drag-to-move — funnels
+// through pointerdown/move/up rather than the native 'click' event: once a
+// drag crosses from one square's element to another, the browser's
+// synthetic click fires on their nearest common ancestor (not on either
+// square), so a click-based handler can silently miss it.
+function onPointerDown(e, r, c) {
+  if (pendingPromotion || (e.pointerType === 'mouse' && e.button !== 0)) return;
+  const piece = state.board[r][c];
+  const draggable = !!piece && piece[0] === state.turn;
+
+  dragState = {
+    r, c, draggable, dragging: false,
+    startX: e.clientX, startY: e.clientY,
+    ghostEl: null, hoverCell: null,
+  };
+  window.addEventListener('pointermove', onPointerMove);
+  window.addEventListener('pointerup', onPointerUp, { once: true });
+}
+
+function onPointerMove(e) {
+  if (!dragState || !dragState.draggable) return;
+  const dx = e.clientX - dragState.startX;
+  const dy = e.clientY - dragState.startY;
+
+  if (!dragState.dragging) {
+    if (Math.hypot(dx, dy) < DRAG_THRESHOLD) return;
+    dragState.dragging = true;
+    selected = { r: dragState.r, c: dragState.c };
+    legalTargets = legalMovesForSquare(state, dragState.r, dragState.c);
+    render();
+    startGhost(e);
+  }
+
+  positionGhost(e);
+  updateHoverSquare(e);
+}
+
+function startGhost(e) {
+  const piece = state.board[dragState.r][dragState.c];
+  const ghost = document.createElement('div');
+  ghost.className = `piece piece-${piece[0]} drag-ghost`;
+  ghost.textContent = GLYPHS[piece];
+  document.body.appendChild(ghost);
+  dragState.ghostEl = ghost;
+
+  const srcCell = squares[boardIndex(dragState.r, dragState.c)];
+  srcCell.pieceEl.classList.add('dragging-hidden');
+}
+
+function positionGhost(e) {
+  if (!dragState.ghostEl) return;
+  dragState.ghostEl.style.left = e.clientX + 'px';
+  dragState.ghostEl.style.top = e.clientY + 'px';
+}
+
+function updateHoverSquare(e) {
+  const el = document.elementFromPoint(e.clientX, e.clientY);
+  const sqEl = el ? el.closest('.square') : null;
+  if (dragState.hoverCell && dragState.hoverCell !== sqEl) {
+    dragState.hoverCell.classList.remove('drop-target');
+  }
+  if (sqEl) sqEl.classList.add('drop-target');
+  dragState.hoverCell = sqEl;
+}
+
+function onPointerUp() {
+  window.removeEventListener('pointermove', onPointerMove);
+  if (!dragState) return;
+  const { r, c, dragging, ghostEl, hoverCell } = dragState;
+  dragState = null;
+
+  if (!dragging) {
+    activateSquare(r, c);
+    return;
+  }
+
+  if (ghostEl) ghostEl.remove();
+  if (hoverCell) hoverCell.classList.remove('drop-target');
+  squares[boardIndex(r, c)].pieceEl.classList.remove('dragging-hidden');
+
+  let moved = false;
+  if (hoverCell) {
+    const tr = Number(hoverCell.dataset.r), tc = Number(hoverCell.dataset.c);
+    const move = legalTargets.find(m => m.to.r === tr && m.to.c === tc);
+    if (move) {
+      moved = true;
+      if (move.promotion) offerPromotion({ r, c }, move);
+      else commitMove({ r, c }, move);
+    }
+  }
+
+  if (!moved) {
+    selected = null;
+    legalTargets = [];
+    render();
+  }
+}
+
+function activateSquare(r, c) {
   if (pendingPromotion) return;
 
   if (selected) {
