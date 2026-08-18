@@ -1,0 +1,64 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Chess Vision Trainer</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <header>
+    <h1>Chess Vision Trainer</h1>
+    <p>A sandbox board that paints every square's lines of attack — no engine, just you moving both sides.</p>
+  </header>
+
+  <div class="layout">
+    <div class="board-column">
+      <div class="status-line" id="status-line"></div>
+      <div id="board-wrap">
+        <div id="board"></div>
+      </div>
+      <div class="buttons-row">
+        <button class="action" id="btn-reset">Reset board</button>
+        <button class="action" id="btn-undo">Undo move</button>
+        <button class="action" id="btn-flip">Flip board</button>
+      </div>
+    </div>
+
+    <div class="sidebar">
+      <div class="panel">
+        <h2>Vision overlay</h2>
+        <div class="toggle-row">
+          <label><input type="checkbox" id="toggle-white" checked /> <span class="swatch white-sw"></span> White's attacks</label>
+        </div>
+        <div class="toggle-row">
+          <label><input type="checkbox" id="toggle-black" checked /> <span class="swatch black-sw"></span> Black's attacks</label>
+        </div>
+        <div class="toggle-row">
+          <label><input type="checkbox" id="toggle-threats" checked /> Highlight threatened pieces</label>
+        </div>
+        <div class="toggle-row">
+          <label><input type="checkbox" id="toggle-counts" /> Show attacker counts (W/B)</label>
+        </div>
+      </div>
+
+      <div class="panel">
+        <h2>Square inspector</h2>
+        <div id="inspector">Hover a square to see exactly which pieces attack or defend it.</div>
+      </div>
+
+      <div class="panel">
+        <h2>Moves</h2>
+        <div id="move-list"></div>
+      </div>
+    </div>
+  </div>
+
+  <footer>
+    Darker green/red = more attackers on that square; where both overlap, the square is contested by both sides.
+    A dashed orange ring marks a piece under attack; a pulsing red ring marks one that's attacked more times than it's defended.
+  </footer>
+
+  <script type="module" src="js/main.js"></script>
+</body>
+</html>
